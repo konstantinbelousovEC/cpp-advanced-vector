@@ -109,17 +109,11 @@ public:
                 Swap(rhs_copy);
             } else {
                 if (size_ > rhs.size_) {
-                    size_t i = 0;
-                    for (; i != rhs.size_; ++i) {
-                        data_[i] = rhs.data_[i];
-                    }
-                    std::destroy_n(begin() + i, size_ - i);
+                    std::copy(rhs.begin(), rhs.end(), begin());
+                    std::destroy_n(begin() + rhs.size_, size_ - rhs.size_);
                 } else {
-                    size_t i = 0;
-                    for (; i != size_; ++i) {
-                        data_[i] = rhs.data_[i];
-                    }
-                    std::uninitialized_copy_n(rhs.begin(), rhs.size_ - i, begin());
+                    std::copy(rhs.begin(), rhs.data_ + size_, begin());
+                    std::uninitialized_copy_n(rhs.data_ + size_, rhs.size_ - size_, data_ + size_);
                 }
                 size_ = rhs.size_;
             }
@@ -212,9 +206,8 @@ public:
             return end();
         }
         size_t position_index = std::distance(cbegin(), pos);
-        std::destroy_at(pos);
         std::move(data_ + position_index + 1, end(), data_ + position_index);
-        size_--;
+        PopBack();
         return data_ + position_index;
     }
 
